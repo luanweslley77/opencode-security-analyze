@@ -1,0 +1,26 @@
+{
+  "name": "@opencode-ai/plugin-security",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "Apache-2.0",
+  "description": "Security analysis plugin for OpenCode - ported from Gemini CLI Security Extension",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "bun run scripts/build.ts"
+  },
+  "exports": {
+    ".": "./dist/security.ts"
+  },
+  "files": [
+    "dist",
+    "skills"
+  ],
+  "dependencies": {
+    "@opencode-ai/plugin": "workspace:*",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.5.0"
+  }
+}
