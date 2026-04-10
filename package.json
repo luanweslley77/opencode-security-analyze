@@ -1,20 +1,52 @@
 {
   "name": "@opencode-ai/plugin-security",
   "version": "0.1.0",
+  "description": "Security analysis plugin for OpenCode — SAST scanning, dependency vulnerability detection, PoC execution, and security patching. Ported from Gemini CLI Security Extension.",
   "type": "module",
   "license": "Apache-2.0",
-  "description": "Security analysis plugin for OpenCode - ported from Gemini CLI Security Extension",
-  "scripts": {
-    "typecheck": "tsc --noEmit",
-    "build": "bun run scripts/build.ts"
-  },
+  "main": "./dist/security.ts",
+  "types": "./dist/security.d.ts",
   "exports": {
     ".": "./dist/security.ts"
   },
   "files": [
     "dist",
-    "skills"
+    "skills",
+    "commands"
   ],
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "tsc --noEmit",
+    "build": "bun run scripts/build.ts",
+    "test": "echo 'No tests configured — see test-results/ for E2E test reports'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/luanweslley77/opencode-security-analyze.git"
+  },
+  "bugs": {
+    "url": "https://github.com/luanweslley77/opencode-security-analyze/issues"
+  },
+  "homepage": "https://github.com/luanweslley77/opencode-security-analyze#readme",
+  "author": "Luan Weslley <luanweslley77@gmail.com>",
+  "keywords": [
+    "opencode",
+    "plugin",
+    "security",
+    "sast",
+    "vulnerability",
+    "osv-scanner",
+    "code-audit",
+    "dependency-scan",
+    "poc"
+  ],
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "packageManager": "bun@latest",
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@opencode-ai/plugin": "workspace:*",
     "zod": "^3.23.8"
