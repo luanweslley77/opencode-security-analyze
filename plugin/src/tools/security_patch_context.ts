@@ -1,19 +1,19 @@
 import { tool } from "@opencode-ai/plugin"
 import { promises as fs } from "fs"
 import path from "path"
-import { loadKnowledge, VulnerabilityType } from "../knowledge.js"
+import { getKnowledge } from "../knowledge.js"
 
 export const securityPatchContextTool = tool({
   description: "Fetches context about a security vulnerability in a given file including knowledge base rules and file content. Use this before patching vulnerabilities.",
   args: {
-    vulnerability: tool.schema.enum(["scan_deps", "path_traversal", "other"]).describe("The vulnerability type for knowledge base lookup."),
+    vulnerability: tool.schema.enum(["path_traversal", "sqli", "xss", "cmd_injection", "ssrf", "weak_crypto", "hardcoded_secrets", "llm_injection", "scan_deps", "other"]).describe("The vulnerability type for knowledge base lookup."),
     filePath: tool.schema.string().describe("Absolute path to file needing patching."),
     pocFilePath: tool.schema.string().describe("Absolute path to PoC file (or empty string)."),
     vulnerabilityContext: tool.schema.string().describe("Description of vulnerability with line numbers."),
   },
   async execute(args, context) {
     try {
-      const knowledge = await loadKnowledge(args.vulnerability)
+      const knowledge = getKnowledge(args.vulnerability)
 
       const filePath = args.filePath.startsWith("/")
         ? args.filePath
