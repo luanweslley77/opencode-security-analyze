@@ -4,15 +4,17 @@
   "description": "Security analysis plugin for OpenCode — SAST scanning, dependency vulnerability detection, PoC execution, and security patching. Ported from Gemini CLI Security Extension.",
   "type": "module",
   "license": "Apache-2.0",
-  "main": "./dist/security.ts",
-  "types": "./dist/security.d.ts",
+  "main": "./index.ts",
   "exports": {
-    ".": "./dist/security.ts"
+    ".": "./index.ts"
   },
   "files": [
-    "dist",
+    "index.ts",
+    "plugin/src",
     "skills",
-    "commands"
+    "commands",
+    "scripts",
+    "tsconfig.json"
   ],
   "scripts": {
     "typecheck": "tsc --noEmit",
