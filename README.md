@@ -17,6 +17,7 @@ Provides 12 native tools, 5 slash commands, 3 reusable skills, and a dedicated s
 - [Installation](#installation)
 - [Quick Start](#quick-start)
 - [Commands](#commands)
+- [Agent Assignment](#agent-assignment)
 - [Tools Reference](#tools-reference)
 - [Security Agent](#security-agent)
 - [Skills](#skills)
@@ -275,6 +276,19 @@ Scope detection uses OpenCode's `plugin_origins` API (via the `config` hook) wit
 - `create` — Create a new note (fails if it already exists)
 - `append` — Add to existing note (or create if missing)
 - `overwrite` — Replace entire note contents
+
+---
+
+### Agent Assignment
+
+All 5 security commands automatically use the dedicated `security` agent. This means every command invocation includes:
+
+- **SAST Vulnerability Analysis** — 7-category checklist covering injection, access control, data handling, authentication, LLM safety, and privacy violations
+- **Secure Coding Patterns** — Remediation examples for path traversal, SQLi, XSS, command injection, SSRF, weak crypto, hardcoded secrets, and prompt injection (Node.js, Python, Go)
+- **Severity Assessment Rubric** — Critical/High/Medium/Low classification with impact descriptions
+- **High-Fidelity Reporting Checklist** — 5-question verification to minimize false positives
+
+This happens automatically — no additional configuration is needed. When you run `/security-analyze`, `/security-scan-deps`, or any other security command, the full security context is loaded into the agent's system prompt.
 
 ---
 
