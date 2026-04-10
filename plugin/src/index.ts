@@ -1,4 +1,6 @@
 import type { Plugin } from "@opencode-ai/plugin"
+import { promises as fs, existsSync } from "fs"
+import path from "path"
 
 import { securityAnalyzeTool } from "./tools/security_analyze.js"
 import { getAuditScopeTool } from "./tools/get_audit_scope.js"
@@ -31,6 +33,33 @@ export const SecurityPlugin: Plugin = async ({ directory, client }) => {
     },
 
     async config(input) {
+      function findSkillsDir(): string | null {
+        const candidates = [
+          path.join(__dirname, "skills"),
+          path.join(__dirname, "..", "skills"),
+          path.join(__dirname, "..", "..", "skills"),
+        ]
+        for (const dir of candidates) {
+          try {
+            if (existsSync(dir)) return dir
+          } catch {
+            continue
+          }
+        }
+        return null
+      }
+
+      const skillsDir = path.join(directory, ".opencode", "skills")
+      const pluginSkillsDir = findSkillsDir()
+      if (pluginSkillsDir) {
+        try {
+          await fs.mkdir(skillsDir, { recursive: true })
+          await fs.cp(pluginSkillsDir, skillsDir, { recursive: true, force: true })
+        } catch {
+          // Failed to copy skills — skip silently
+        }
+      }
+
       if (!input.command) {
         input.command = {}
       }
