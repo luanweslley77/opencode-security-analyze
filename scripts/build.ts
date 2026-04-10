@@ -44,6 +44,8 @@ const allContent = [
 
 const cleaned = allContent
   .replace(/export const SECURITY_DIR_NAME/g, "const SECURITY_DIR_NAME")
+  .replace(/export const SECURITY_DIR\b/g, "const SECURITY_DIR")
+  .replace(/export const execFileAsync\b/g, "const execFileAsync")
   .replace(/export const POC_DIR_NAME/g, "const POC_DIR_NAME")
   .replace(/export const PATH_TRAVERSAL_TEMP_FILE/g, "const PATH_TRAVERSAL_TEMP_FILE")
   .replace(/export const IGNORED_/g, "const IGNORED_")
@@ -76,8 +78,6 @@ const cleaned = allContent
   .replace(/export const runPocTool/g, "const runPocTool")
   .replace(/export const installDependenciesTool/g, "const installDependenciesTool")
   .replace(/export const SecurityPlugin/g, "const SecurityPlugin")
-  .replace(/const SECURITY_DIR = "\.opencode_security"/g, "// SECURITY_DIR already defined")
-  .replace(/const execFileAsync = promisify\(execFile\)/g, "// execFileAsync already defined")
 
 writeFileSync(OUT, cleaned + "\n\nexport { SecurityPlugin }\nexport default { id: \"security\", server: SecurityPlugin }\n")
 if (existsSync(path.join(SRC, "knowledge"))) {

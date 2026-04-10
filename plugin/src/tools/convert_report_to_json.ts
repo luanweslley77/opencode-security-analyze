@@ -2,8 +2,7 @@ import { tool } from "@opencode-ai/plugin"
 import { promises as fs } from "fs"
 import path from "path"
 import { parseMarkdownToDict } from "../parser.js"
-
-const SECURITY_DIR = ".opencode_security"
+import { SECURITY_DIR } from "../constants.js"
 
 export const convertReportToJsonTool = tool({
   description: "Converts the Markdown security report into a JSON file named security_report.json in the .opencode_security/ folder.",

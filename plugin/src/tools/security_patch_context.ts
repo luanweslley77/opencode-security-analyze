@@ -3,8 +3,6 @@ import { promises as fs } from "fs"
 import path from "path"
 import { loadKnowledge, VulnerabilityType } from "../knowledge.js"
 
-const SECURITY_DIR = ".opencode_security"
-
 export const securityPatchContextTool = tool({
   description: "Fetches context about a security vulnerability in a given file including knowledge base rules and file content. Use this before patching vulnerabilities.",
   args: {

@@ -1,10 +1,7 @@
 import { tool } from "@opencode-ai/plugin"
-import { execFile } from "child_process"
-import { promisify } from "util"
 import { promises as fs } from "fs"
 import path from "path"
-
-const execFileAsync = promisify(execFile)
+import { execFileAsync } from "../constants.js"
 
 export const installDependenciesTool = tool({
   description: "Executes a dependency installation script in an isolated context.",

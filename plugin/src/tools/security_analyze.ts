@@ -1,8 +1,7 @@
 import { tool } from "@opencode-ai/plugin"
 import { promises as fs } from "fs"
 import path from "path"
-
-const SECURITY_DIR = ".opencode_security"
+import { SECURITY_DIR } from "../constants.js"
 
 export const securityAnalyzeTool = tool({
   description: "Initialize security analysis workspace. Creates SECURITY_ANALYSIS_TODO.md and DRAFT_SECURITY_REPORT.md in the .opencode_security/ directory. Use this as the first step before conducting any security audit.",

@@ -1,5 +1,5 @@
 import { tool } from "@opencode-ai/plugin"
-import { promises as fs } from "fs"
+import { promises as fs, existsSync } from "fs"
 import path from "path"
 
 export const securityNoteAdderTool = tool({
@@ -14,7 +14,7 @@ export const securityNoteAdderTool = tool({
       const notesDir = path.join(context.directory, ".opencode_security", "notes")
       await fs.mkdir(notesDir, { recursive: true })
       const notePath = path.join(notesDir, args.note_name)
-      const fileExists = require("fs").existsSync(notePath)
+      const fileExists = existsSync(notePath)
       const mode = args.mode || (fileExists ? "append" : "create")
 
       if (mode === "create" || !fileExists) {

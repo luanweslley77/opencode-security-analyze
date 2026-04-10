@@ -1,5 +1,5 @@
 import { execSync, spawnSync } from "child_process"
-import { promises as fs, readFileSync } from "fs"
+import { promises as fs, readFileSync, readdirSync, type Dirent } from "fs"
 import path from "path"
 import { IGNORED_FOLDERS, IGNORED_FILES, IGNORED_EXTENSIONS } from "./constants.js"
 
@@ -13,8 +13,23 @@ export function isGitHubRepository(): boolean {
   }
 }
 
+function isGitRepo(): boolean {
+  try {
+    const result = spawnSync("git", ["rev-parse", "--git-dir"], {
+      encoding: "utf-8",
+      stdio: "pipe",
+    })
+    return result.status === 0
+  } catch {
+    return false
+  }
+}
+
 export function getAuditScope(base?: string, head?: string): string {
   try {
+    if (!isGitRepo()) {
+      return "Not a git repository."
+    }
     let args: string[]
     if (base && head) {
       args = ["diff", base, head]
@@ -38,6 +53,9 @@ export function getAuditScope(base?: string, head?: string): string {
 
 export function getFilesToAudit(): string[] {
   try {
+    if (!isGitRepo()) {
+      return getFilesToAuditFallback()
+    }
     const trackedResult = execSync("git ls-files", { encoding: "utf-8" }).split("\n").filter(Boolean)
     const untrackedResult = execSync("git ls-files --others --exclude-standard", { encoding: "utf-8" }).split("\n").filter(Boolean)
 
@@ -49,8 +67,41 @@ export function getFilesToAudit(): string[] {
       if (IGNORED_EXTENSIONS.some(ext => file.toLowerCase().endsWith(ext))) return false
       return true
     })
-  } catch (error: any) {
-    console.error("Error getting files to audit:", error.message)
+  } catch {
+    return getFilesToAuditFallback()
+  }
+}
+
+function getFilesToAuditFallback(): string[] {
+  try {
+    const startDir = process.cwd()
+    const found: string[] = []
+
+    function walk(dir: string) {
+      let entries: Dirent[]
+      try {
+        entries = readdirSync(dir, { withFileTypes: true })
+      } catch {
+        return
+      }
+      for (const entry of entries) {
+        if (IGNORED_FOLDERS.some(folder => entry.name === folder)) continue
+        if (entry.name.startsWith(".")) continue
+        const fullPath = path.join(dir, entry.name)
+        const relativePath = path.relative(startDir, fullPath)
+        if (entry.isDirectory()) {
+          walk(fullPath)
+        } else if (entry.isFile()) {
+          if (IGNORED_FILES.some(name => entry.name.toLowerCase() === name.toLowerCase())) continue
+          if (IGNORED_EXTENSIONS.some(ext => relativePath.toLowerCase().endsWith(ext))) continue
+          found.push(relativePath)
+        }
+      }
+    }
+
+    walk(startDir)
+    return found
+  } catch {
     return []
   }
 }

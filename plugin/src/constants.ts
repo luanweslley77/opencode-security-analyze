@@ -1,8 +1,15 @@
+import { execFile } from "child_process"
+import { promisify } from "util"
+
 export const SECURITY_DIR_NAME = ".opencode_security"
 
 export const POC_DIR_NAME = "poc"
 
 export const PATH_TRAVERSAL_TEMP_FILE = "gcli_secext_path_traversal_test.txt"
+
+export const SECURITY_DIR = SECURITY_DIR_NAME
+
+export const execFileAsync = promisify(execFile)
 
 export const IGNORED_FOLDERS = [
   "node_modules", "dist", "build", "out", "target", "bin", "obj", "vendor",

@@ -1,11 +1,8 @@
-import { exec, execFile } from "child_process"
+import { execFile } from "child_process"
 import { promisify } from "util"
 import { promises as fs, existsSync } from "fs"
 import path from "path"
-import { PATH_TRAVERSAL_TEMP_FILE, POC_DIR_NAME } from "./constants.js"
-
-const execAsync = promisify(exec)
-const execFileAsync = promisify(execFile)
+import { PATH_TRAVERSAL_TEMP_FILE, POC_DIR_NAME, execFileAsync } from "./constants.js"
 
 export interface RunPocResult {
   stdout: string

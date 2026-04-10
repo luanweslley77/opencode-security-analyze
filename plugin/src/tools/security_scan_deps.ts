@@ -1,10 +1,7 @@
 import { tool } from "@opencode-ai/plugin"
-import { promises as fs } from "fs"
+import { promises as fs, existsSync } from "fs"
 import path from "path"
-import { execFile } from "child_process"
-import { promisify } from "util"
-
-const execFileAsync = promisify(execFile)
+import { execFileAsync } from "../constants.js"
 
 async function ensureOsvScanner(): Promise<string> {
   const cacheDir = path.join(process.env.HOME || process.env.USERPROFILE || ".", ".cache", "opencode", "osv-scanner")
@@ -12,7 +9,7 @@ async function ensureOsvScanner(): Promise<string> {
   const binName = `osv-scanner${ext}`
   const binPath = path.join(cacheDir, binName)
 
-  if (require("fs").existsSync(binPath)) return binPath
+  if (existsSync(binPath)) return binPath
 
   const platform = process.platform === "darwin" ? "darwin" : process.platform === "win32" ? "windows" : "linux"
   const arch = process.arch === "arm64" ? "arm64" : "amd64"

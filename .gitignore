@@ -1,7 +1,7 @@
 node_modules/
 dist/
 *.tsbuildinfo
-MCP_SERVER_MAPPING.md
+EXTENSION_MAPPING.md
 OPENCODE_PLUGIN_API.md
 AGENTS.md
 opencode.jsonc
