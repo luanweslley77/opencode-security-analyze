@@ -1,5 +1,6 @@
 import type { Plugin } from "@opencode-ai/plugin"
 import { promises as fs, existsSync } from "fs"
+import os from "os"
 import path from "path"
 
 import { securityAnalyzeTool } from "./tools/security_analyze.js"
@@ -33,6 +34,31 @@ export const SecurityPlugin: Plugin = async ({ directory, client }) => {
     },
 
     async config(input) {
+      // Determine if this plugin is installed globally or locally
+      // Method A: Use plugin_origins from the config (official OpenCode API)
+      const cfg = input as typeof input & { plugin_origins?: Array<{
+        spec: string | [string, any]
+        source: string
+        scope: "global" | "local"
+      }> }
+      const myOrigin = cfg.plugin_origins?.find(o => {
+        const spec = Array.isArray(o.spec) ? o.spec[0] : o.spec
+        return spec.includes("opencode-security-analyze")
+      })
+
+      // Fallback heuristic: compare plugin location vs project directory
+      const inferredScope = path.resolve(__dirname).startsWith(path.resolve(directory) + path.sep)
+        ? "local" as const
+        : "global" as const
+      const scope = myOrigin?.scope ?? inferredScope
+
+      // Global installs go to ~/.config/opencode/skills
+      // Local installs go to .opencode/skills in the project
+      const skillsDir = scope === "global"
+        ? path.join(os.homedir(), ".config", "opencode", "skills")
+        : path.join(directory, ".opencode", "skills")
+
+      // Find the bundled skills directory
       function findSkillsDir(): string | null {
         const candidates = [
           path.join(__dirname, "skills"),
@@ -49,7 +75,6 @@ export const SecurityPlugin: Plugin = async ({ directory, client }) => {
         return null
       }
 
-      const skillsDir = path.join(directory, ".opencode", "skills")
       const pluginSkillsDir = findSkillsDir()
       if (pluginSkillsDir) {
         try {
