@@ -49,7 +49,9 @@ const cleaned = allContent
   .replace(/export const POC_DIR_NAME/g, "const POC_DIR_NAME")
   .replace(/export const PATH_TRAVERSAL_TEMP_FILE/g, "const PATH_TRAVERSAL_TEMP_FILE")
   .replace(/export const IGNORED_/g, "const IGNORED_")
-  .replace(/export async function loadKnowledge/g, "async function loadKnowledge")
+  .replace(/export async function getKnowledge/g, "async function getKnowledge")
+  .replace(/export function listKnowledgeTypes/g, "function listKnowledgeTypes")
+  .replace(/export type VulnerabilityType/g, "type VulnerabilityType")
   .replace(/export function isGitHubRepository/g, "function isGitHubRepository")
   .replace(/export function getAuditScope/g, "function getAuditScope")
   .replace(/export function getFilesToAudit/g, "function getFilesToAudit")
@@ -80,9 +82,6 @@ const cleaned = allContent
   .replace(/export const SecurityPlugin/g, "const SecurityPlugin")
 
 writeFileSync(OUT, cleaned + "\n\nexport { SecurityPlugin }\nexport default { id: \"security\", server: SecurityPlugin }\n")
-if (existsSync(path.join(SRC, "knowledge"))) {
-  cpSync(path.join(SRC, "knowledge"), path.join(DIST, "knowledge"), { recursive: true })
-}
 
 console.log(`Built: ${OUT}`)
 console.log(`Size: ${(cleaned.length / 1024).toFixed(1)} KB, Lines: ${cleaned.split("\n").length}`)
