@@ -44,6 +44,7 @@ The plugin registers:
 |------|---------|
 | `commands/*.md` | OpenCode custom commands (`/security-analyze`, `/security-analyze-full`, `/security-analyze-pr`) |
 | `skills/*/SKILL.md` | Agent skills (`security-patcher`, `dependency-manager`, `poc`) |
+| `osv-scanner/*` | Bundled osv-scanner v2.3.5 binaries (6 platforms: linux/darwin/windows x amd64/arm64, ~318MB total) |
 
 ## Key conventions
 
@@ -57,10 +58,18 @@ The plugin registers:
 
 **Current phase:** Active development — porting `/home/fallen33/security` (Gemini CLI extension) to OpenCode plugin format.
 
-### Testing workflow (current)
-1. Build the plugin → bundled single `.ts` file
-2. Copy the bundled plugin to `~/testing/plugins/`
-3. Run OpenCode from `~/testing/` for manual testing
+### Testing workflow
+
+**Manual testing:**
+1. Build the plugin: `npm run build`
+2. Copy to test project: `cp dist/security.ts ~/testing/.opencode/plugins/security.ts`
+3. Open OpenCode: `cd ~/testing && opencode`
+4. Execute security commands and observe behavior
+5. Check `.opencode_security/` for generated reports
+
+**E2E test reports** (stored in `test-results/`):
+- `test-results/opencode/` — OpenCode CLI test results (5 commands)
+- `test-results/gemini/` — Gemini CLI test results (5 commands)
 
 ### Package distribution (current — git install)
 The plugin is installed via git reference in `opencode.json`:
@@ -70,7 +79,7 @@ The plugin is installed via git reference in `opencode.json`:
 }
 ```
 
-The `package.json` `files` field points to **source files** (`index.ts`, `plugin/src`, `skills`, `commands`, `scripts`, `tsconfig.json`), not `dist/`. This allows git installs to work without requiring a pre-built `dist/` directory.
+The `package.json` `files` field points to **source files** (`index.ts`, `plugin/src`, `osv-scanner`, `skills`, `commands`, `scripts`, `tsconfig.json`), not `dist/`. This allows git installs to work without requiring a pre-built `dist/` directory.
 
 ### Release checklist — when switching to `main` branch + npm publish
 
@@ -89,12 +98,14 @@ Before creating a `main` branch or publishing to npm, the following changes must
    ```diff
      "files": [
    -   "index.ts",
+   -   "osv-scanner",
    -   "plugin/src",
    -   "skills",
    -   "commands",
    -   "scripts",
    -   "tsconfig.json"
    +   "dist",
+   +   "osv-scanner",
    +   "skills",
    +   "commands"
      ],

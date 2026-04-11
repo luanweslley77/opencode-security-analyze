@@ -43,7 +43,7 @@ This plugin transforms OpenCode into a **security analysis engine** capable of p
 | Capability | Description |
 |------------|-------------|
 | **SAST Scanning** | Analyzes source code for 7 categories of vulnerabilities including SQL injection, XSS, command injection, SSRF, SSTI, broken access control, and more |
-| **Dependency Scanning** | Uses [osv-scanner](https://github.com/google/osv-scanner) v1.8.4 to identify known CVEs in project dependencies (auto-downloaded on first use) |
+| **Dependency Scanning** | Uses [osv-scanner](https://github.com/google/osv-scanner) v2.3.5 (bundled binary) to identify known CVEs in project dependencies |
 | **PoC Generation & Execution** | Creates and runs proof-of-concept scripts in isolated sandboxes (Python venv, Go mod, ts-node, Node.js) to verify vulnerabilities exist |
 | **Automated Patching** | Generates secure code fixes with before/after PoC verification to confirm the vulnerability is fixed |
 | **Privacy Violation Detection** | Traces sensitive data (passwords, SSNs, PII) from source to sink, flagging improper handling |
@@ -251,7 +251,7 @@ Scope detection uses OpenCode's `plugin_origins` API (via the `config` hook) wit
 **Agent:** `security`
 
 **Workflow:**
-1. Calls `security_scan_deps` (auto-downloads osv-scanner on first use)
+1. Calls `security_scan_deps` (uses bundled osv-scanner v2.3.5 binary)
 2. Scans all lockfiles recursively
 3. Classifies findings by CVSS severity (CRITICAL > HIGH > MEDIUM > LOW)
 4. Provides prioritized patching recommendations
@@ -320,7 +320,7 @@ All 12 tools are registered via the `tool` hook and available to any agent with 
 
 | Tool | Description | Arguments |
 |------|-------------|-----------|
-| `security_scan_deps` | Scans dependencies for known CVEs via osv-scanner CLI (auto-downloads v1.8.4 to `~/.cache/opencode/osv-scanner/` on first use) | `path?` (string), `format?` (text\|json) |
+| `security_scan_deps` | Scans dependencies for known CVEs via osv-scanner v2 CLI (bundled binary, multi-platform) | `path?` (string), `format?` (text\|json) |
 | `security_note_adder` | Creates/appends/overwrites security notes in `.opencode_security/notes/` | `note_name`, `content`, `mode?` (append\|create\|overwrite) |
 
 ---
@@ -582,13 +582,20 @@ security-opencode/
 │       ├── poc_context.ts            # PoC workspace setup
 │       ├── run_poc.ts                # PoC executor (Python/Go/TS/Node)
 │       ├── install_dependencies.ts   # Isolated dependency installation
-│       ├── security_scan_deps.ts     # osv-scanner wrapper
+│       ├── security_scan_deps.ts     # osv-scanner v2 wrapper (bundled binary)
 │       └── security_note_adder.ts    # Note/allowlist manager
 ├── skills/
 │   ├── security-patcher/SKILL.md     # Patching workflow
 │   ├── poc/SKILL.md                  # PoC generation workflow
 │   └── dependency-manager/SKILL.md   # Isolated dependency management
 ├── commands/                         # Markdown command files (optional)
+├── osv-scanner/                      # Bundled osv-scanner v2.3.5 binaries (multi-platform)
+│   ├── osv-scanner_linux_amd64
+│   ├── osv-scanner_linux_arm64
+│   ├── osv-scanner_darwin_amd64
+│   ├── osv-scanner_darwin_arm64
+│   ├── osv-scanner_windows_amd64.exe
+│   └── osv-scanner_windows_arm64.exe
 ├── dist/
 │   ├── security.ts                   # Bundled plugin (single file, ~85KB)
 │   └── knowledge/                    # Knowledge base files (post-build)
@@ -649,22 +656,6 @@ The build script concatenates all source files into a single bundled file at `di
 - Removes `export` keywords from internal declarations
 - Preserves final `export { SecurityPlugin }` and `export default { id: "security", server: SecurityPlugin }`
 
-### Testing
-
-E2E test reports are stored in `test-results/`:
-- `test-results/opencode/` — OpenCode CLI test results (5 commands)
-- `test-results/gemini/` — Gemini CLI test results (5 commands)
-
-Each report documents the full interaction log, vulnerabilities found, and any errors encountered.
-
-### Manual Testing Workflow
-
-1. Build the plugin: `npm run build`
-2. Copy to test project: `cp dist/security.ts ~/testing/.opencode/plugins/security.ts`
-3. Open OpenCode: `cd ~/testing && opencode`
-4. Execute security commands and observe behavior
-5. Check `.opencode_security/` for generated reports
-
 ---
 
 ## Troubleshooting
@@ -690,12 +681,6 @@ cp dist/security.ts <your-plugin-location>/security.ts
 **Cause:** The build script was stripping the `execFileAsync` declaration along with local definitions.
 
 **Resolution:** Update to the latest version of the plugin (commit `b2e32af` or later) where `execFileAsync` is defined in `constants.ts` and imported by all tool files.
-
-### osv-scanner download fails
-
-**Cause:** Network issue or firewall blocking GitHub releases.
-
-**Resolution:** Manually download osv-scanner v1.8.4 from [GitHub Releases](https://github.com/google/osv-scanner/releases/tag/v1.8.4) and place it at `~/.cache/opencode/osv-scanner/osv-scanner` (or `osv-scanner.exe` on Windows). Set executable permissions: `chmod +5`.
 
 ### No vulnerabilities found but I know there are some
 
