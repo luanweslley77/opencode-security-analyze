@@ -58,33 +58,33 @@ Ported from the [Gemini CLI Security Extension](https://github.com/gemini-cli-ex
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
-│                        OpenCode TUI                              │
-│                                                                  │
-│  /security-analyze  /security-scan-deps  /security-note          │
-│        │                   │                   │                  │
-│        ▼                   ▼                   ▼                  │
+│                        OpenCode TUI                             |
+│                                                                 |
+│  /security-analyze  /security-scan-deps  /security-note         |
+│        │                   │                   │                |
+│        ▼                   ▼                   ▼                |
 │  ┌───────────────────────────────────────────────────────────┐  │
-│  │                    Security Agent                          │  │
-│  │  SAST Checklist • Remediation Patterns • Severity Rubric   │  │
-│  │  High-Fidelity Reporting Checklist • Core Principles        │  │
+│  │                    Security Agent                         |  |
+│  │  SAST Checklist • Remediation Patterns • Severity Rubric  |  |
+│  │  High-Fidelity Reporting Checklist • Core Principles      |  |
 │  └───────────────────────────────────────────────────────────┘  │
-│        │                                                         │
-│        ▼                                                         │
+│        │                                                        |
+│        ▼                                                        |
+│  ┌───────────────────────────────────────────────────────────┐  |
+│  │                   Plugin Tools (12)                       |  | 
+│  │  security_analyze • get_audit_scope • get_files_to_audit  |  |
+│  │  get_line_count • find_line_numbers • convert_report_*    |  |
+│  │  security_patch_context • poc_context • run_poc           |  |
+│  │  install_dependencies • security_scan_deps • note_adder   |  |
+│  └───────────────────────────────────────────────────────────┘  │
+│        │                                                        |
+│        ▼                                                        |
 │  ┌───────────────────────────────────────────────────────────┐  │
-│  │                   Plugin Tools (12)                        │  │
-│  │  security_analyze • get_audit_scope • get_files_to_audit   │  │
-│  │  get_line_count • find_line_numbers • convert_report_*     │  │
-│  │  security_patch_context • poc_context • run_poc            │  │
-│  │  install_dependencies • security_scan_deps • note_adder    │  │
+│  │                    Security Hooks (4)                     |  |
+│  │  .env block • rm -rf / deny • SECURITY_ANALYSIS_MODE env  |  |
+│  │  session.idle logging                                     |  | 
 │  └───────────────────────────────────────────────────────────┘  │
-│        │                                                         │
-│        ▼                                                         │
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │                    Security Hooks (4)                      │  │
-│  │  .env block • rm -rf / deny • SECURITY_ANALYSIS_MODE env   │  │
-│  │  session.idle logging                                      │  │
-│  └───────────────────────────────────────────────────────────┘  │
-│                                                                  │
+│                                                                 | 
 │  Skills: security-patcher • poc • dependency-manager            │
 └─────────────────────────────────────────────────────────────────┘
 ```
