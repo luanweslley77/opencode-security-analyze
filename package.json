@@ -11,6 +11,7 @@
   "files": [
     "index.ts",
     "plugin/src",
+    "osv-scanner",
     "skills",
     "commands",
     "scripts",

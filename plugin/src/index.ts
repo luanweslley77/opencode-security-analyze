@@ -655,7 +655,7 @@ Proceed with the Initial Planning Phase now.`,
         template: `You are a highly skilled senior security analyst. Your primary task is to conduct a security audit of the vulnerabilities in the dependencies of this project. You are required to only conduct the scan, not patch the vulnerabilities.
 
 **Step 1: Perform initial scan**
-Use the security_scan_deps tool to scan the project. The tool will automatically download osv-scanner on first use if not already cached. It scans all relevant lockfiles recursively.
+Use the security_scan_deps tool to scan the project. The tool uses a bundled osv-scanner v2 binary. It scans all relevant lockfiles recursively.
 
 **Step 2: Analyse the report**
 Go through the scan results, identify the relevant project lockfiles (ignoring lockfiles in test directories), and prioritise which vulnerabilities to patch based on the description and severity. Use the severity assessment rubric in your context to classify findings.
