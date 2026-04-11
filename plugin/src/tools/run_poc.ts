@@ -1,4 +1,5 @@
 import { tool } from "@opencode-ai/plugin"
+import { requireSecurityAgent } from "../constants.js"
 import { runPoc } from "../poc.js"
 
 export const runPocTool = tool({
@@ -7,6 +8,7 @@ export const runPocTool = tool({
     filePath: tool.schema.string().describe("Absolute path to the PoC file to execute."),
   },
   async execute(args, context) {
+    requireSecurityAgent(context.agent)
     const result = await runPoc(args.filePath, context.directory)
 
     if (result.isSecurityError) {

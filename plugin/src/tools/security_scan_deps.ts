@@ -2,7 +2,7 @@ import { tool } from "@opencode-ai/plugin"
 import { promises as fs, existsSync } from "fs"
 import path from "path"
 import { fileURLToPath } from "url"
-import { execFileAsync } from "../constants.js"
+import { requireSecurityAgent, execFileAsync } from "../constants.js"
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -26,6 +26,7 @@ export const securityScanDepsTool = tool({
     format: tool.schema.enum(["text", "json"]).optional().describe("Output format (defaults to text)."),
   },
   async execute(args, context) {
+    requireSecurityAgent(context.agent)
     try {
       const targetPath = args.path || context.directory
       const binPath = getOsvScannerBin()

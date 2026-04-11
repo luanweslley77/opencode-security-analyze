@@ -1,4 +1,5 @@
 import { tool } from "@opencode-ai/plugin"
+import { requireSecurityAgent } from "../constants.js"
 import { findLineNumbers } from "../security.js"
 
 export const findLineNumbersTool = tool({
@@ -8,6 +9,7 @@ export const findLineNumbersTool = tool({
     snippet: tool.schema.string().describe("The code snippet to search for inside the file."),
   },
   async execute(args, context) {
+    requireSecurityAgent(context.agent)
     return findLineNumbers(args.filePath, args.snippet, context.directory)
   },
 })

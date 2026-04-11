@@ -1,6 +1,7 @@
 import { tool } from "@opencode-ai/plugin"
 import { promises as fs, existsSync } from "fs"
 import path from "path"
+import { requireSecurityAgent } from "../constants.js"
 
 export const securityNoteAdderTool = tool({
   description: "Creates a new security note file or appends to an existing one in .opencode_security/notes/. Used for maintaining vulnerability allowlists (vuln_allowlist.txt) and analysis notes.",
@@ -10,6 +11,7 @@ export const securityNoteAdderTool = tool({
     mode: tool.schema.enum(["append", "create", "overwrite"]).optional().describe("Write mode. Defaults to 'append' if file exists, 'create' otherwise."),
   },
   async execute(args, context) {
+    requireSecurityAgent(context.agent)
     try {
       const notesDir = path.join(context.directory, ".opencode_security", "notes")
       await fs.mkdir(notesDir, { recursive: true })

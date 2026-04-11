@@ -1,4 +1,5 @@
 import { tool } from "@opencode-ai/plugin"
+import { requireSecurityAgent } from "../constants.js"
 import { getAuditScope } from "../filesystem.js"
 
 export const getAuditScopeTool = tool({
@@ -8,6 +9,7 @@ export const getAuditScopeTool = tool({
     head: tool.schema.string().optional().describe("The head branch or commit hash (e.g., 'feature-branch')."),
   },
   async execute(args, context) {
+    requireSecurityAgent(context.agent)
     return getAuditScope(args.base, args.head)
   },
 })

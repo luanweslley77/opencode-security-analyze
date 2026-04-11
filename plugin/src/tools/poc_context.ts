@@ -1,8 +1,8 @@
 import { tool } from "@opencode-ai/plugin"
 import { promises as fs } from "fs"
 import path from "path"
+import { requireSecurityAgent, SECURITY_DIR_NAME, POC_DIR_NAME, PATH_TRAVERSAL_TEMP_FILE } from "../constants.js"
 import { detectProjectLanguage } from "../filesystem.js"
-import { SECURITY_DIR_NAME, POC_DIR_NAME, PATH_TRAVERSAL_TEMP_FILE } from "../constants.js"
 
 export const pocContextTool = tool({
   description: "Sets up the necessary workspace and directories to test a vulnerability, returning the context variables needed to generate the PoC. Call this tool as part of the poc skill.",
@@ -12,6 +12,7 @@ export const pocContextTool = tool({
     sourceCodeLocation: tool.schema.string().describe("Exact file path and function/line of vulnerable code."),
   },
   async execute(args, context) {
+    requireSecurityAgent(context.agent)
     try {
       const language = await detectProjectLanguage()
 

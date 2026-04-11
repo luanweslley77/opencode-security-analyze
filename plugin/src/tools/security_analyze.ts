@@ -1,12 +1,13 @@
 import { tool } from "@opencode-ai/plugin"
 import { promises as fs } from "fs"
 import path from "path"
-import { SECURITY_DIR } from "../constants.js"
+import { SECURITY_DIR, requireSecurityAgent } from "../constants.js"
 
 export const securityAnalyzeTool = tool({
   description: "Initialize security analysis workspace. Creates SECURITY_ANALYSIS_TODO.md and DRAFT_SECURITY_REPORT.md in the .opencode_security/ directory. Use this as the first step before conducting any security audit.",
   args: {},
   async execute(args, context) {
+    requireSecurityAgent(context.agent)
     const securityDir = path.join(context.directory, SECURITY_DIR)
     await fs.mkdir(securityDir, { recursive: true })
 

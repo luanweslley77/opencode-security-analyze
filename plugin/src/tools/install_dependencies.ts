@@ -1,7 +1,7 @@
 import { tool } from "@opencode-ai/plugin"
 import { promises as fs } from "fs"
 import path from "path"
-import { execFileAsync } from "../constants.js"
+import { requireSecurityAgent, execFileAsync } from "../constants.js"
 
 export const installDependenciesTool = tool({
   description: "Executes a dependency installation script in an isolated context.",
@@ -11,6 +11,7 @@ export const installDependenciesTool = tool({
     cwd: tool.schema.string().optional().describe("Execution directory (optional)."),
   },
   async execute(args, context) {
+    requireSecurityAgent(context.agent)
     try {
       let execDir = args.cwd
 

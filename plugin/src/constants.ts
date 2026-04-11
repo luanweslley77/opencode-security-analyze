@@ -11,6 +11,14 @@ export const SECURITY_DIR = SECURITY_DIR_NAME
 
 export const execFileAsync = promisify(execFile)
 
+const SECURITY_AGENT = "security"
+
+export function requireSecurityAgent(agent: string) {
+  if (agent !== SECURITY_AGENT) {
+    throw new Error(`This tool is restricted to the security agent. Current agent: "${agent}"`)
+  }
+}
+
 export const IGNORED_FOLDERS = [
   "node_modules", "dist", "build", "out", "target", "bin", "obj", "vendor",
   "docs", "documentation", "tests", "test", "spec", "__tests__", ".github",

@@ -18,7 +18,7 @@ Provides 12 native tools, 5 slash commands, 3 reusable skills, and a dedicated s
 - [Quick Start](#quick-start)
 - [Commands](#commands)
 - [Agent Assignment](#agent-assignment)
-- [Tools Reference](#tools-reference)
+- [Tools](#tools)
 - [Security Agent](#security-agent)
 - [Skills](#skills)
 - [Two-Pass Workflow](#two-pass-workflow)
@@ -56,38 +56,97 @@ Ported from the [Gemini CLI Security Extension](https://github.com/gemini-cli-ex
 
 ## Architecture
 
+The plugin is structured using a **Layered Architecture**, specifically designed to respect OpenCode's API isolation and keep intelligence separate from the execution engines.
+
+```mermaid
+graph TD
+    subgraph "OpenCode Host Environment"
+        UX["OpenCode TUI & Chat"]
+        PluginAPI["OpenCode Plugin API"]
+    end
+
+    subgraph "Plugin Integration Layer"
+        Registry["Plugin Config (index.ts)"]
+        Hooks["Security Hooks Policy Engine"]
+        CmdRouter["Slash Commands Router"]
+    end
+
+    subgraph "Intelligence & Skills Layer (LLM Context)"
+        Agent["@security Agent Profile"]
+        Skills["Skills (security-patcher, poc, etc)"]
+        KB["Knowledge Base (Remediation Patterns)"]
+    end
+
+    subgraph "Interface/Tools Layer (12 Native Tools)"
+        T_Analyze["🔍 SAST Tools"]
+        T_AST["📂 AST & File Discovery"]
+        T_PoC["⚙️ Sandboxed PoC Runner"]
+        T_OSV["🛡️ Dependency Scanner"]
+    end
+
+    subgraph "Core Domain Engines (plugin/src/)"
+        FS_Eng["filesystem.ts (Git & Diff Logic)"]
+        PoC_Eng["poc.ts (Virtual Envs: Py/Node/Go)"]
+        Parsers["parser.ts (AST/Report JSON Conversions)"]
+        Sec_Eng["security.ts (Path-Traversal Protections)"]
+    end
+    
+    subgraph "External Subsystems"
+        OSV["OSV-Scanner Binaries (Embedded)"]
+    end
+
+    %% Flow Definitions
+    UX -->|Dispatches| CmdRouter
+    CmdRouter --> Agent
+    Agent -->|Loads via RAG/Context| Skills
+    Agent -->|Dictates Rules| Hooks
+    Agent -->|Triggers Tool Calls| PluginAPI
+    
+    PluginAPI --> Registry
+    Registry --> T_Analyze & T_AST & T_PoC & T_OSV
+    
+    T_AST --> FS_Eng
+    T_PoC --> PoC_Eng
+    T_Analyze --> Parsers & Sec_Eng & KB
+    T_OSV --> OSV
+    
+    Hooks -.->|Blocks access| FS_Eng
+    Hooks -.->|Prevents rm -rf| PoC_Eng
+
+    classDef opencode fill:#2E2E2E,stroke:#B072FF,color:#B072FF,stroke-width:2px;
+    classDef integration fill:#2d333b,stroke:#539bf5,color:#fff;
+    classDef intelligence fill:#402c52,stroke:#d0b5fb,color:#fff;
+    classDef tools fill:#1e4c3a,stroke:#4caf50,color:#fff;
+    classDef core fill:#5c351b,stroke:#ff9800,color:#fff;
+    classDef external fill:#522828,stroke:#f44336,color:#fff;
+
+    class UX,PluginAPI opencode;
+    class Registry,Hooks,CmdRouter integration;
+    class Agent,Skills,KB intelligence;
+    class T_Analyze,T_AST,T_PoC,T_OSV tools;
+    class FS_Eng,PoC_Eng,Parsers,Sec_Eng core;
+    class OSV external;
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        OpenCode TUI                             |
-│                                                                 |
-│  /security-analyze  /security-scan-deps  /security-note         |
-│        │                   │                   │                |
-│        ▼                   ▼                   ▼                |
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │                    Security Agent                         |  |
-│  │  SAST Checklist • Remediation Patterns • Severity Rubric  |  |
-│  │  High-Fidelity Reporting Checklist • Core Principles      |  |
-│  └───────────────────────────────────────────────────────────┘  │
-│        │                                                        |
-│        ▼                                                        |
-│  ┌───────────────────────────────────────────────────────────┐  |
-│  │                   Plugin Tools (12)                       |  | 
-│  │  security_analyze • get_audit_scope • get_files_to_audit  |  |
-│  │  get_line_count • find_line_numbers • convert_report_*    |  |
-│  │  security_patch_context • poc_context • run_poc           |  |
-│  │  install_dependencies • security_scan_deps • note_adder   |  |
-│  └───────────────────────────────────────────────────────────┘  │
-│        │                                                        |
-│        ▼                                                        |
-│  ┌───────────────────────────────────────────────────────────┐  │
-│  │                    Security Hooks (4)                     |  |
-│  │  .env block • rm -rf / deny • SECURITY_ANALYSIS_MODE env  |  |
-│  │  session.idle logging                                     |  | 
-│  └───────────────────────────────────────────────────────────┘  │
-│                                                                 | 
-│  Skills: security-patcher • poc • dependency-manager            │
-└─────────────────────────────────────────────────────────────────┘
-```
+
+### Component Details Breakdown
+
+1. **Integration Layer (Host Contract):** 
+   The boundary between the codebase and OpenCode's proprietary systems. It registers intentions using imperative hooks (`tool.execute.before`, `permission.ask`, and `shell.env`) that create the base security mesh for the TUI.
+
+2. **Intelligence Layer (LLM Logic):**
+   Instead of hardcoding rules in TypeScript, the core analytical logic lives inside Markdown files (Skills, Agent Prompts, and the dynamic `knowledge.js` base). This forms a Data-Driven architecture for the Large Language Model (LLM).
+
+3. **Tools Layer (Exposed Contract):**
+   12 lightweight mapping wrappers. They receive validated JSON input emitted by the OpenCode API and delegate the heavy lifting to the internal domain engines.
+
+4. **Core Domain Engines (Business Logic):**
+   - **`filesystem.ts`:** Isolates complexity for Git Merge-base resolution or file-system traversal.
+   - **`poc.ts`:** Virtual Sandbox Manager that spawns Venvs (Python), handles `go mod` and isolates Node.js execution, enabling agnostic PoC execution.
+   - **`parser.ts`:** Bidirectional translator (Structured Markdown to/from Typed JSON arrays).
+   - **`security.ts`:** Guarantees anti-path-traversal protection resolving safe `realpath` paths.
+
+5. **External Subsystems:**
+   Embedded cross-platform `osv-scanner` binaries. This architectural separation provides execution stability without tying the node architecture dependencies directly to it.
 
 ---
 
@@ -290,11 +349,13 @@ All 5 security commands automatically use the dedicated `security` agent. This m
 
 This happens automatically — no additional configuration is needed. When you run `/security-analyze`, `/security-scan-deps`, or any other security command, the full security context is loaded into the agent's system prompt.
 
+### Tool Access Restriction
+
+All 12 security tools are **restricted to the `security` agent only**. Any other agent attempting to use these tools will receive an access denied error. This ensures that security operations can only be performed within the dedicated security context.
+
 ---
 
-## Tools Reference
-
-All 12 tools are registered via the `tool` hook and available to any agent with permission.
+## Tools
 
 ### Analysis Tools
 

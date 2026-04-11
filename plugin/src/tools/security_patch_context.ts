@@ -1,6 +1,7 @@
 import { tool } from "@opencode-ai/plugin"
 import { promises as fs } from "fs"
 import path from "path"
+import { requireSecurityAgent } from "../constants.js"
 import { getKnowledge } from "../knowledge.js"
 
 export const securityPatchContextTool = tool({
@@ -12,6 +13,7 @@ export const securityPatchContextTool = tool({
     vulnerabilityContext: tool.schema.string().describe("Description of vulnerability with line numbers."),
   },
   async execute(args, context) {
+    requireSecurityAgent(context.agent)
     try {
       const knowledge = getKnowledge(args.vulnerability)
 
