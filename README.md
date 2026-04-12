@@ -25,7 +25,6 @@ Provides 12 native tools, 5 slash commands, 3 reusable skills, and a dedicated s
 - [High-Fidelity Reporting](#high-fidelity-reporting)
 - [Security Hooks](#security-hooks)
 - [Knowledge Base](#knowledge-base)
-- [Plugin Scope Detection](#plugin-scope-detection)
 - [Directory Structure](#directory-structure)
 - [Development](#development)
 - [Troubleshooting](#troubleshooting)
@@ -193,16 +192,9 @@ Then add to `opencode.json`:
 }
 ```
 
-### Skills Auto-Copy
+### Skills Registration
 
-The plugin automatically copies bundled skills to the correct location on startup:
-
-| Installation Type | Skills Destination |
-|-------------------|-------------------|
-| **Local** (project-level) | `<project>/.opencode/skills/` |
-| **Global** (`~/.config/opencode/`) | `~/.config/opencode/skills/` |
-
-Scope detection uses OpenCode's `plugin_origins` API (via the `config` hook) with a path-based fallback heuristic. No manual skill setup is required.
+The plugin registers its bundled skills directory directly via `config.skills.paths`. No file copying is needed — skills are always in sync with the plugin version and work regardless of installation method (git install, npm, or local copy).
 
 ---
 
@@ -593,24 +585,6 @@ The plugin includes a knowledge base with remediation patterns for 10 vulnerabil
 
 ---
 
-## Plugin Scope Detection
-
-The plugin detects whether it was installed **globally** or **locally** and routes skills accordingly:
-
-### Detection Method
-
-1. **Primary:** Reads `plugin_origins` from OpenCode's config (via the `config` hook). This field contains `scope: "global" | "local"` for each installed plugin.
-2. **Fallback:** If `plugin_origins` is unavailable, compares the plugin's `__dirname` against the project `directory` — if the plugin lives inside the project tree, it's local; otherwise global.
-
-### Skill Routing
-
-| Scope | Skills Destination |
-|-------|-------------------|
-| `local` | `<project>/.opencode/skills/` |
-| `global` | `~/.config/opencode/skills/` |
-
-This ensures skills are available regardless of installation method (git install, npm, local copy, or global plugin directory).
-
 ---
 
 ## Directory Structure
@@ -679,12 +653,9 @@ your-project/
 │       ├── poc_file_1.py            # Python PoC
 │       ├── poc_file_2.go            # Go PoC
 │       └── poc_file_3.ts            # TypeScript PoC
-└── .opencode/
-    └── skills/                      # Auto-copied skills (local install)
-        ├── security-patcher/SKILL.md
-        ├── poc/SKILL.md
-        └── dependency-manager/SKILL.md
 ```
+
+Skills are registered directly from the plugin's bundled `skills/` directory via `config.skills.paths` — no files are copied to the project.
 
 ---
 
@@ -754,16 +725,9 @@ cp dist/security.ts <your-plugin-location>/security.ts
 
 ### Skills not appearing in OpenCode
 
-**Cause:** Skills were not auto-copied or the scope detection failed.
+**Cause:** Plugin may not be loaded correctly.
 
-**Resolution:** Manually copy skills to the correct location:
-```bash
-# For local installs:
-cp -r skills/* <project>/.opencode/skills/
-
-# For global installs:
-cp -r skills/* ~/.config/opencode/skills/
-```
+**Resolution:** Verify the plugin is registered in your `opencode.json` and check OpenCode's startup logs for plugin errors. Skills are auto-registered via `config.skills.paths` — no manual setup required.
 
 ---
 

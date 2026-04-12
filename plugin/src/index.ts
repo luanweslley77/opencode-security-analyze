@@ -1,6 +1,5 @@
 import type { Plugin } from "@opencode-ai/plugin"
-import { promises as fs, existsSync } from "fs"
-import os from "os"
+import { existsSync } from "fs"
 import path from "path"
 
 import { securityAnalyzeTool } from "./tools/security_analyze.js"
@@ -16,7 +15,7 @@ import { installDependenciesTool } from "./tools/install_dependencies.js"
 import { securityScanDepsTool } from "./tools/security_scan_deps.js"
 import { securityNoteAdderTool } from "./tools/security_note_adder.js"
 
-export const SecurityPlugin: Plugin = async ({ directory, client }) => {
+export const SecurityPlugin: Plugin = async ({ client }) => {
   return {
     tool: {
       security_analyze: securityAnalyzeTool,
@@ -34,54 +33,24 @@ export const SecurityPlugin: Plugin = async ({ directory, client }) => {
     },
 
     async config(input) {
-      // Determine if this plugin is installed globally or locally
-      // Method A: Use plugin_origins from the config (official OpenCode API)
-      const cfg = input as typeof input & { plugin_origins?: Array<{
-        spec: string | [string, any]
-        source: string
-        scope: "global" | "local"
-      }> }
-      const myOrigin = cfg.plugin_origins?.find(o => {
-        const spec = Array.isArray(o.spec) ? o.spec[0] : o.spec
-        return spec.includes("opencode-security-analyze")
-      })
+      // Register bundled skills directory via config.skills.paths
+      // This avoids file copying and works regardless of install scope or OPENCODE_CONFIG_DIR
+      const cfg = input as typeof input & { skills?: { paths?: string[] } };
+      const candidates = [
+        path.join(__dirname, "skills"),
+        path.join(__dirname, "..", "skills"),
+        path.join(__dirname, "..", "..", "skills"),
+      ];
 
-      // Fallback heuristic: compare plugin location vs project directory
-      const inferredScope = path.resolve(__dirname).startsWith(path.resolve(directory) + path.sep)
-        ? "local" as const
-        : "global" as const
-      const scope = myOrigin?.scope ?? inferredScope
-
-      // Global installs go to ~/.config/opencode/skills
-      // Local installs go to .opencode/skills in the project
-      const skillsDir = scope === "global"
-        ? path.join(os.homedir(), ".config", "opencode", "skills")
-        : path.join(directory, ".opencode", "skills")
-
-      // Find the bundled skills directory
-      function findSkillsDir(): string | null {
-        const candidates = [
-          path.join(__dirname, "skills"),
-          path.join(__dirname, "..", "skills"),
-          path.join(__dirname, "..", "..", "skills"),
-        ]
-        for (const dir of candidates) {
-          try {
-            if (existsSync(dir)) return dir
-          } catch {
-            continue
+      for (const dir of candidates) {
+        if (existsSync(dir)) {
+          cfg.skills = cfg.skills || {};
+          cfg.skills.paths = cfg.skills.paths || [];
+          const resolved = path.resolve(dir);
+          if (!cfg.skills.paths.includes(resolved)) {
+            cfg.skills.paths.push(resolved);
           }
-        }
-        return null
-      }
-
-      const pluginSkillsDir = findSkillsDir()
-      if (pluginSkillsDir) {
-        try {
-          await fs.mkdir(skillsDir, { recursive: true })
-          await fs.cp(pluginSkillsDir, skillsDir, { recursive: true, force: true })
-        } catch {
-          // Failed to copy skills — skip silently
+          break;
         }
       }
 
